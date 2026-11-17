@@ -1,6 +1,6 @@
 ---
 title: "Heart Disease Risk Prediction Using Machine Learning in R"
-author: "Your Name"
+author: "D.M.D.A.Dissanayaka (2020/ASP/83)"
 date: "`r Sys.Date()`"
 output: html_document
 ---
@@ -11,27 +11,25 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 
 ## 1. Introduction
 
-<!-- Write introduction here on Day 7 -->
+Heart disease is the leading cause of death worldwide, responsible for 17.9 million deaths annually (WHO, 2023). Early identification of high-risk patients using routine clinical measurements can assist clinicians in making faster diagnostic decisions. This project aims to predict the presence of coronary artery disease using machine learning models applied to clinical data from the Cleveland Heart Disease Dataset.
 
 ## 2. Data
 
-<!-- Describe dataset here on Day 7 -->
+The Cleveland Heart Disease Dataset was collected in 1988 at the Cleveland Clinic Foundation and published by Detrano et al. (1989) in the American Journal of Cardiology. It is publicly available from the UCI Machine Learning Repository. The dataset contains 303 patients and 14 clinical variables including age, sex, chest pain type, resting blood pressure, cholesterol, fasting blood sugar, resting ECG results, maximum heart rate, exercise induced angina, ST depression, slope, number of vessels, thalassemia type and the target variable indicating presence of heart disease.
 
 ## 3. Data Import and Cleaning
 
 ```{r load-libraries}
 # Load all required packages
-library(tidyverse)
 library(ggplot2)
 library(caret)
 library(e1071)
 library(pheatmap)
 library(pROC)
-library(corrplot)
 library(randomForest)
 ```
 
-#{r import-data}
+```{r import-data}
 # Load the dataset
 df <- read.csv("C:/Users/ADMIN/Documents/Bioinformatic-Project---2020-ASP-83/Data/heart.csv")
 
@@ -51,11 +49,11 @@ df$target <- factor(df$target, levels = c(0,1), labels = c("No Disease", "Heart 
 
 # Check cleaned data
 str(df)
-
+```
 
 ## 4. Exploratory Data Analysis
 
-#{r eda-plot1}
+```{r eda-plot1}
 # Figure 1 - Age distribution by heart disease outcome
 plot1 <- ggplot(df, aes(x = age, fill = target)) +
   geom_histogram(bins = 30, color = "white") +
@@ -68,10 +66,11 @@ plot1 <- ggplot(df, aes(x = age, fill = target)) +
   theme_minimal()
 
 print(plot1)
-ggsave("Output/figure1_age_distribution.png", plot1, width = 8, height = 5)
+ggsave("C:/Users/ADMIN/Documents/Bioinformatic-Project---2020-ASP-83/Output/figure1_age_distribution.png", 
+       plot1, width = 8, height = 5)
+```
 
-
-#{r eda-plot2}
+```{r eda-plot2}
 # Figure 2 - Chest pain type by heart disease outcome
 plot2 <- ggplot(df, aes(x = cp, fill = target)) +
   geom_bar(position = "dodge", color = "white") +
@@ -85,21 +84,19 @@ plot2 <- ggplot(df, aes(x = cp, fill = target)) +
   theme(axis.text.x = element_text(angle = 15, hjust = 1))
 
 print(plot2)
-ggsave("Output/figure2_chest_pain.png", plot2, width = 8, height = 5)
+ggsave("C:/Users/ADMIN/Documents/Bioinformatic-Project---2020-ASP-83/Output/figure2_chest_pain.png", 
+       plot2, width = 8, height = 5)
+```
 
+```{r eda-plot3}
+# Figure 3 - Boxplots of cholesterol and max heart rate
+chol_data <- data.frame(target = df$target, Value = df$chol, Variable = "Cholesterol (mg/dl)")
+thalach_data <- data.frame(target = df$target, Value = df$thalach, Variable = "Max Heart Rate (bpm)")
+plot3_data <- rbind(chol_data, thalach_data)
 
-#{r eda-plot3}
-# Figure 3 - Boxplots of cholesterol and max heart rate by outcome
-plot3 <- df %>%
-  select(target, chol, thalach) %>%
-  pivot_longer(cols = c(chol, thalach), 
-               names_to = "Variable", 
-               values_to = "Value") %>%
-  mutate(Variable = recode(Variable,
-    "chol" = "Cholesterol (mg/dl)",
-    "thalach" = "Max Heart Rate (bpm)")) %>%
-  ggplot(aes(x = target, y = Value, fill = target)) +
+plot3 <- ggplot(plot3_data, aes(x = target, y = Value, fill = target)) +
   geom_boxplot(color = "black") +
+  scale_fill_manual(values = c("No Disease" = "#FF9999", "Heart Disease" = "#66B2FF")) +
   facet_wrap(~Variable, scales = "free_y") +
   labs(
     title = "Figure 3: Cholesterol and Max Heart Rate by Heart Disease Status",
@@ -111,87 +108,78 @@ plot3 <- df %>%
   theme(legend.position = "none")
 
 print(plot3)
-ggsave("Output/figure3_boxplots.png", plot3, width = 8, height = 5)
+ggsave("C:/Users/ADMIN/Documents/Bioinformatic-Project---2020-ASP-83/Output/figure3_boxplots.png", 
+       plot3, width = 8, height = 5)
+```
 
+```{r eda-heatmap}
+# Figure 4 - Correlation heatmap
+numeric_df <- cor(df[, c("age", "trestbps", "chol", "thalach", "oldpeak", "ca")])
 
-#{r eda-heatmap}
-# Figure 4 - Correlation heatmap of clinical features
-library(pheatmap)
-
-# Select numeric columns and calculate correlation
-numeric_df <- df %>%
-  select(age, trestbps, chol, thalach, oldpeak, ca) %>%
-  cor()
-
-# Save heatmap
-png("Output/figure4_heatmap.png", width = 800, height = 600)
+png("C:/Users/ADMIN/Documents/Bioinformatic-Project---2020-ASP-83/Output/figure4_heatmap.png", 
+    width = 2000, height = 1600, res = 200)
 pheatmap(numeric_df,
          main = "Figure 4: Correlation Heatmap of Clinical Features",
          color = colorRampPalette(c("blue", "white", "red"))(50),
          display_numbers = TRUE,
          number_format = "%.2f",
-         fontsize = 12)
+         fontsize = 14)
 dev.off()
 
-# Display heatmap
 pheatmap(numeric_df,
          main = "Figure 4: Correlation Heatmap of Clinical Features",
          color = colorRampPalette(c("blue", "white", "red"))(50),
          display_numbers = TRUE,
          number_format = "%.2f",
-         fontsize = 12)
-
+         fontsize = 14)
+```
 
 ## 5. Statistical Tests
 
-#{r stats-tests}
+```{r stats-tests}
 # T-tests for continuous variables
 t_age <- t.test(age ~ target, data = df)
 t_chol <- t.test(chol ~ target, data = df)
 t_thalach <- t.test(thalach ~ target, data = df)
 t_trestbps <- t.test(trestbps ~ target, data = df)
 
-# Print t-test results
 cat("=== T-TEST RESULTS ===\n")
 cat("\nAge p-value:", round(t_age$p.value, 4))
 cat("\nCholesterol p-value:", round(t_chol$p.value, 4))
 cat("\nMax Heart Rate p-value:", round(t_thalach$p.value, 4))
 cat("\nBlood Pressure p-value:", round(t_trestbps$p.value, 4))
 
-# Chi-squared tests for categorical variables
+# Chi-squared tests
 chi_sex <- chisq.test(table(df$sex, df$target))
 chi_cp <- chisq.test(table(df$cp, df$target))
 chi_exang <- chisq.test(table(df$exang, df$target))
 
-# Print chi-squared results
 cat("\n\n=== CHI-SQUARED TEST RESULTS ===\n")
 cat("\nSex p-value:", round(chi_sex$p.value, 6))
 cat("\nChest Pain p-value:", round(chi_cp$p.value, 6))
 cat("\nExercise Angina p-value:", round(chi_exang$p.value, 6))
-
+```
 
 ## 6. Machine Learning Models
 
-#{r train-test-split}
-# Set seed for reproducibility
+```{r train-test-split}
+# Fix factor levels and split data
 set.seed(123)
 
-# Fix factor level names
 df$target <- factor(df$target, 
                     levels = c("No Disease", "Heart Disease"),
                     labels = c("NoDisease", "HeartDisease"))
 
-# Split data 80% train, 20% test
 trainIndex <- createDataPartition(df$target, p = 0.8, list = FALSE)
 train_data <- df[trainIndex, ]
 test_data <- df[-trainIndex, ]
 
 cat("Training set rows:", nrow(train_data))
 cat("\nTest set rows:", nrow(test_data))
+```
 
-
-#{r logistic-regression}
-# Logistic Regression model with 5-fold cross validation
+```{r logistic-regression}
+# Logistic Regression
 set.seed(123)
 
 log_model <- train(target ~ .,
@@ -202,16 +190,13 @@ log_model <- train(target ~ .,
                                           number = 5,
                                           classProbs = TRUE))
 
-# Test predictions
 log_pred <- predict(log_model, test_data)
-
-# Confusion matrix
 log_cm <- confusionMatrix(log_pred, test_data$target)
 print(log_cm)
+```
 
-
-#{r random-forest}
-# Random Forest model with 5-fold cross validation
+```{r random-forest}
+# Random Forest
 set.seed(123)
 
 rf_model <- train(target ~ .,
@@ -221,18 +206,13 @@ rf_model <- train(target ~ .,
                                          number = 5,
                                          classProbs = TRUE))
 
-# Test predictions
 rf_pred <- predict(rf_model, test_data)
-
-# Confusion matrix
 rf_cm <- confusionMatrix(rf_pred, test_data$target)
 print(rf_cm)
+```
 
-
-#{r svm-model}
-# SVM model using e1071
-library(e1071)
-
+```{r svm-model}
+# SVM model
 set.seed(123)
 
 svm_model <- svm(target ~ ., 
@@ -240,126 +220,107 @@ svm_model <- svm(target ~ .,
                  kernel = "radial",
                  probability = TRUE)
 
-# Test predictions
 svm_pred <- predict(svm_model, test_data)
-
-# Confusion matrix
 svm_cm <- confusionMatrix(svm_pred, test_data$target)
 print(svm_cm)
+```
 
-
-#{r roc-curves}
-# ROC curves for all models
-library(pROC)
-
-# Get probabilities
+```{r roc-curves}
+# ROC curves
 log_prob <- predict(log_model, test_data, type = "prob")[,2]
 rf_prob <- predict(rf_model, test_data, type = "prob")[,2]
 svm_prob_raw <- predict(svm_model, test_data, probability = TRUE)
 svm_prob <- attr(svm_prob_raw, "probabilities")[,2]
 
-# Create ROC curves
 roc_log <- roc(test_data$target, log_prob)
 roc_rf <- roc(test_data$target, rf_prob)
 roc_svm <- roc(test_data$target, svm_prob)
 
-# Print AUC values
 cat("Logistic Regression AUC:", round(auc(roc_log), 4))
 cat("\nRandom Forest AUC:", round(auc(roc_rf), 4))
 cat("\nSVM AUC:", round(auc(roc_svm), 4))
 
-# Save ROC plot
-png("Output/figure5_roc_curves.png", width = 1200, height = 900, res = 150)
-plot(roc_log, col = "blue", lwd = 2, 
-     main = "Figure 5: ROC Curves for All Models")
+png("C:/Users/ADMIN/Documents/Bioinformatic-Project---2020-ASP-83/Output/figure5_roc_curves.png", 
+    width = 1200, height = 900, res = 150)
+plot(roc_log, col = "blue", lwd = 2, main = "Figure 5: ROC Curves for All Models")
 plot(roc_rf, col = "red", lwd = 2, add = TRUE)
 plot(roc_svm, col = "green", lwd = 2, add = TRUE)
 legend("bottomright", 
-       legend = c(
-         paste("Logistic Regression AUC =", round(auc(roc_log), 3)),
-         paste("Random Forest AUC =", round(auc(roc_rf), 3)),
-         paste("SVM AUC =", round(auc(roc_svm), 3))),
-       col = c("blue", "red", "green"), 
-       lwd = 2)
+       legend = c(paste("Logistic Regression AUC =", round(auc(roc_log), 3)),
+                  paste("Random Forest AUC =", round(auc(roc_rf), 3)),
+                  paste("SVM AUC =", round(auc(roc_svm), 3))),
+       col = c("blue", "red", "green"), lwd = 2)
 dev.off()
 
-# Display in RStudio
-plot(roc_log, col = "blue", lwd = 2, 
-     main = "Figure 5: ROC Curves for All Models")
+plot(roc_log, col = "blue", lwd = 2, main = "Figure 5: ROC Curves for All Models")
 plot(roc_rf, col = "red", lwd = 2, add = TRUE)
 plot(roc_svm, col = "green", lwd = 2, add = TRUE)
 legend("bottomright", 
-       legend = c(
-         paste("Logistic Regression AUC =", round(auc(roc_log), 3)),
-         paste("Random Forest AUC =", round(auc(roc_rf), 3)),
-         paste("SVM AUC =", round(auc(roc_svm), 3))),
-       col = c("blue", "red", "green"), 
-       lwd = 2)
+       legend = c(paste("Logistic Regression AUC =", round(auc(roc_log), 3)),
+                  paste("Random Forest AUC =", round(auc(roc_rf), 3)),
+                  paste("SVM AUC =", round(auc(roc_svm), 3))),
+       col = c("blue", "red", "green"), lwd = 2)
+```
 
-#{r feature-importance}
-# Feature Importance from Random Forest
+```{r feature-importance}
+# Feature Importance
 importance_data <- varImp(rf_model)$importance
 importance_data$Feature <- rownames(importance_data)
-importance_data <- importance_data[order(importance_data$Overall, 
-                                         decreasing = TRUE),]
+importance_data <- importance_data[order(importance_data$Overall, decreasing = TRUE),]
 
-# Plot feature importance
-plot6 <- ggplot(importance_data, 
-                aes(x = reorder(Feature, Overall), y = Overall)) +
+plot6 <- ggplot(importance_data, aes(x = reorder(Feature, Overall), y = Overall)) +
   geom_bar(stat = "identity", fill = "#66B2FF", color = "black") +
   coord_flip() +
-  labs(
-    title = "Figure 6: Feature Importance from Random Forest",
-    x = "Clinical Feature",
-    y = "Importance Score"
-  ) +
+  labs(title = "Figure 6: Feature Importance from Random Forest",
+       x = "Clinical Feature", y = "Importance Score") +
   theme_minimal()
 
 print(plot6)
-ggsave("Output/figure6_feature_importance.png", plot6, width = 8, height = 5, dpi = 300)
+ggsave("C:/Users/ADMIN/Documents/Bioinformatic-Project---2020-ASP-83/Output/figure6_feature_importance.png", 
+       plot6, width = 8, height = 5, dpi = 300)
+```
 
-#{r clustering}
+```{r clustering}
 # K-means clustering
 set.seed(123)
 
-# Select numeric columns for clustering
 cluster_data <- df[, c("age", "trestbps", "chol", "thalach", "oldpeak", "ca")]
-
-# Scale the data
 scaled_data <- scale(cluster_data)
-
-# K-means with 2 clusters
 km <- kmeans(scaled_data, centers = 2, nstart = 25)
-
-# Add cluster to dataframe
 df$cluster <- factor(km$cluster)
 
-# Plot using age vs thalach
-plot7 <- ggplot(df, aes(x = age, y = thalach, 
-                         color = cluster, 
-                         shape = target)) +
+plot7 <- ggplot(df, aes(x = age, y = thalach, color = cluster, shape = target)) +
   geom_point(size = 3, alpha = 0.7) +
   scale_color_manual(values = c("1" = "#FF9999", "2" = "#66B2FF")) +
-  labs(
-    title = "Figure 7: K-means Clustering of Patients",
-    x = "Age (years)",
-    y = "Max Heart Rate (bpm)",
-    color = "Cluster",
-    shape = "Diagnosis"
-  ) +
+  labs(title = "Figure 7: K-means Clustering of Patients",
+       x = "Age (years)", y = "Max Heart Rate (bpm)",
+       color = "Cluster", shape = "Diagnosis") +
   theme_minimal()
 
 print(plot7)
-ggsave("Output/figure7_clustering.png", plot7, width = 8, height = 5, dpi = 300)
+ggsave("C:/Users/ADMIN/Documents/Bioinformatic-Project---2020-ASP-83/Output/figure7_clustering.png", 
+       plot7, width = 8, height = 5, dpi = 300)
+```
 
 ## 7. Results and Discussion
 
-<!-- Write interpretation here on Day 7 -->
+The Random Forest model achieved the highest accuracy of 83.33% and AUC of 0.91, outperforming Logistic Regression (81.67%, AUC 0.87) and SVM (80.00%, AUC 0.86). Feature importance analysis revealed that maximum heart rate (thalach), number of major vessels (ca), and thalassemia type (thal) were the strongest predictors of heart disease. Statistical tests confirmed significant differences between disease and non-disease groups for age, max heart rate, blood pressure, sex, chest pain type and exercise angina (p < 0.05). Cholesterol was not statistically significant (p = 0.136), which is a surprising but documented finding in this dataset. The k-means clustering analysis identified two natural patient clusters aligned with age and heart rate, consistent with the classification results.
 
 ## 8. Conclusion
 
-<!-- Write conclusion here on Day 7 -->
+This project successfully demonstrated that machine learning models can predict coronary artery disease from routine clinical measurements with over 80% accuracy. The Random Forest model was the best performer with an AUC of 0.91. Maximum heart rate and number of major vessels were identified as the most important diagnostic features. Future work could include larger and more diverse datasets, additional feature engineering, and deep learning approaches to further improve prediction accuracy.
 
-## 9. References
+## 9. Reproducibility
 
-<!-- Add references here on Day 7 -->
+To reproduce this analysis:
+1. Clone the repository from GitHub
+2. Install R packages: ggplot2, caret, e1071, pheatmap, pROC, randomForest
+3. Run Data/download.R to download the dataset
+4. Open Code/analysis.Rmd in RStudio and click Knit to HTML
+
+## 10. References
+
+- Detrano, R., et al. (1989). International application of a new probability algorithm for the diagnosis of coronary artery disease. American Journal of Cardiology, 64(5), 304-310.
+- UCI Machine Learning Repository. Heart Disease Dataset. https://archive.ics.uci.edu/dataset/45/heart+disease
+- R Core Team (2024). R: A language and environment for statistical computing.
+- Kuhn, M. (2008). Building predictive models in R using the caret package. Journal of Statistical Software, 28(5).
