@@ -1,5 +1,5 @@
 ---
-title: "Heart Disease Risk Prediction Using Machine Learning in R"
+title: "Coronary Artery Disease Risk Prediction: A Bioinformatics Approach in R"
 author: "D.M.D.A.Dissanayaka (2020/ASP/83)"
 date: "`r Sys.Date()`"
 output: html_document
@@ -11,11 +11,24 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 
 ## 1. Introduction
 
-Heart disease is the leading cause of death worldwide, responsible for 17.9 million deaths annually (WHO, 2023). Early identification of high-risk patients using routine clinical measurements can assist clinicians in making faster diagnostic decisions. This project aims to predict the presence of coronary artery disease using machine learning models applied to clinical data from the Cleveland Heart Disease Dataset.
+Coronary Artery Disease (CAD) is the most common form of cardiovascular 
+disease and the leading cause of death globally, responsible for 17.9 million 
+deaths annually (WHO, 2023). CAD occurs when the coronary arteries that supply 
+blood to the heart become narrowed or blocked due to plaque buildup. Early 
+identification of high-risk patients using routine clinical measurements can 
+assist clinicians in making faster diagnostic decisions, potentially saving lives.
+
+This project applies bioinformatics methods to classify patients as having 
+Coronary Artery Disease or not, using clinical data from the Cleveland Heart 
+Disease Dataset.
 
 ## 2. Data
 
-The Cleveland Heart Disease Dataset was collected in 1988 at the Cleveland Clinic Foundation and published by Detrano et al. (1989) in the American Journal of Cardiology. It is publicly available from the UCI Machine Learning Repository. The dataset contains 303 patients and 14 clinical variables including age, sex, chest pain type, resting blood pressure, cholesterol, fasting blood sugar, resting ECG results, maximum heart rate, exercise induced angina, ST depression, slope, number of vessels, thalassemia type and the target variable indicating presence of heart disease.
+The Cleveland Heart Disease Dataset was collected in 1988 at the Cleveland 
+Clinic Foundation and published by Detrano et al. (1989) in the American 
+Journal of Cardiology. It is publicly available from the UCI Machine Learning 
+Repository. The dataset contains 303 patients and 14 clinical variables used 
+to predict the presence of Coronary Artery Disease (CAD).
 
 ## 3. Data Import and Cleaning
 
@@ -160,7 +173,7 @@ cat("\nChest Pain p-value:", round(chi_cp$p.value, 6))
 cat("\nExercise Angina p-value:", round(chi_exang$p.value, 6))
 ```
 
-## 6. Machine Learning Models
+## 6. Bioinformatics Classification Models
 
 ```{r train-test-split}
 # Fix factor levels and split data
@@ -304,11 +317,27 @@ ggsave("C:/Users/ADMIN/Documents/Bioinformatic-Project---2020-ASP-83/Output/figu
 
 ## 7. Results and Discussion
 
-The Random Forest model achieved the highest accuracy of 83.33% and AUC of 0.91, outperforming Logistic Regression (81.67%, AUC 0.87) and SVM (80.00%, AUC 0.86). Feature importance analysis revealed that maximum heart rate (thalach), number of major vessels (ca), and thalassemia type (thal) were the strongest predictors of heart disease. Statistical tests confirmed significant differences between disease and non-disease groups for age, max heart rate, blood pressure, sex, chest pain type and exercise angina (p < 0.05). Cholesterol was not statistically significant (p = 0.136), which is a surprising but documented finding in this dataset. The k-means clustering analysis identified two natural patient clusters aligned with age and heart rate, consistent with the classification results.
+The Random Forest bioinformatics classification model achieved the highest 
+accuracy of 83.33% and AUC of 0.91, outperforming Logistic Regression 
+(81.67%, AUC 0.87) and SVM (80.00%, AUC 0.86). Feature importance analysis 
+revealed that maximum heart rate (thalach), number of major vessels (ca), 
+and thalassemia type (thal) were the strongest predictors of Coronary Artery 
+Disease (CAD). Statistical tests confirmed significant differences between 
+CAD and non-CAD groups for age, max heart rate, blood pressure, sex, chest 
+pain type and exercise angina (p < 0.05). Cholesterol was not statistically 
+significant (p = 0.136). The k-means clustering analysis identified two 
+natural patient clusters aligned with age and heart rate, consistent with 
+the classification results.
 
 ## 8. Conclusion
 
-This project successfully demonstrated that machine learning models can predict coronary artery disease from routine clinical measurements with over 80% accuracy. The Random Forest model was the best performer with an AUC of 0.91. Maximum heart rate and number of major vessels were identified as the most important diagnostic features. Future work could include larger and more diverse datasets, additional feature engineering, and deep learning approaches to further improve prediction accuracy.
+This project successfully demonstrated that bioinformatics classification 
+models can predict Coronary Artery Disease (CAD) from routine clinical 
+measurements with over 80% accuracy. The Random Forest model was the best 
+performer with an AUC of 0.91. Maximum heart rate and number of major vessels 
+were identified as the most important diagnostic features. Future work could 
+include larger and more diverse datasets, integration of genomic biomarkers, 
+and deep learning approaches to further improve CAD prediction accuracy.
 
 ## 9. Reproducibility
 
